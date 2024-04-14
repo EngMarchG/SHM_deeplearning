@@ -1,5 +1,5 @@
 
-# Structural Health Monitoring Using Regression
+# Structural Health Monitoring Using Deep Learning Regression
 
 This repository delves into the critical domain of  **Structural Health Monitoring (SHM)**, aimed at quantifying structural damage through the integration of deep learning and regression techniques. The coding aspects of my thesis are presented here.
 
