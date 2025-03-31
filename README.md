@@ -1,44 +1,75 @@
 
-# Structural Health Monitoring Using Deep Learning Regression
+# Structural Health Monitoring (SHM) Using Advanced Deep Learning Techniques
 
-This repository delves into the critical domain of  **Structural Health Monitoring (SHM)**, aimed at quantifying structural damage through the integration of deep learning and regression techniques. The coding aspects of my thesis are presented here.
+This repository presents a comprehensive exploration of Structural Health Monitoring (SHM) methodologies through sophisticated deep learning and numerical modeling. Originating from extensive research, the code and analyses presented here correspond to Chapters 3, 4, and 5 of my thesis, covering a wide range of structural types—from simple framed structures and bridge trusses to experimental validation of numerical integrity.
 
 ## Quick Links
 
-- [Introduction](#introduction)
-- [Results](#results)
-- [Conclusion](#conclusion)
+*   [Introduction](#introduction)
+*   [Case Studies](#case-studies)
+    *   [Chapter 3: Simple Framed Structure](#chapter-3-simple-framed-structure)
+    *   [Chapter 4: Bridge Truss Analysis](#chapter-4-bridge-truss-analysis)
+    *   [Chapter 5: Experimental Validation](#chapter-5-experimental-validation)
+*   [Key Results](#key-results)
+*   [Conclusion & Future Directions](#conclusion--future-directions)
 
 ## Introduction
-1.  **2D Frame Construction**: Initially, I developed a 2D frame—an elemental representation of structural components. Initially, I implemented the code in  **Maple**, leveraging its symbolic capabilities. However, due to optimization limitations, I transitioned to  **Python**. This transition allowed for the utilization of Python’s robust optimization libraries, significantly enhancing computational efficiency.
-    
-2.  **Optimization Challenges**: The optimization phase presented intriguing challenges, particularly concerning computational time. Initially, each run demanded approximately **4 minutes**, rendering it impractical for large-scale analyses. My objective was clear—to enhance efficiency. Through meticulous optimization efforts, I achieved a remarkable  **100-fold speedup**. Nonetheless, further improvements, such as the integration of **Cython** or other low-level languages, remain on the horizon. It is noteworthy that only specific portions strictly involving numerical computations have been successfully reworked in Cython, as previously tested.
-    
-3.  **Selecting the Right Deep Learning Model**: With foundational work laid, I delved into the realm of deep learning. The selection of an appropriate model for structured data prediction was pivotal. After meticulous evaluation, I augmented an existing architecture, tailoring it to our specific SHM context. The architecture chosen drew inspiration from MLP and transformers. However, it became evident that the chosen architecture lacked the desired complexity. Consequently, I iteratively refined the model, incorporating insights from other prevalent architectures to achieve state-of-the-art complexity and optimal performance.
-    
-4.  **Model Inputs and Domain Knowledge**: Selecting model inputs required a blend of domain expertise and intuition. I steered clear of blind trial and error, drawing upon my understanding of structural mechanics. The identification of pertinent features proved instrumental in optimizing the model’s performance.
-    
-5.  **Domain Knowledge in Machine/Deep Learning**: Profound comprehension of machine learning and deep learning intricacies was paramount. I grappled with questions like:
-    
-    -   How should I order the data?
-    -   What normalization techniques are suitable?
-    -   Should I introduce categorical variables?
-    -   Is a deeper/wider model worth it? (speed/accuracy trade-off)
-    
-    These decisions significantly influenced the model’s accuracy and robustness.
 
-## Results
+Structural Health Monitoring (`SHM`) is crucial for ensuring the reliability and longevity of civil engineering structures. This repository employs state-of-the-art deep learning and numerical modeling techniques to detect, quantify, and analyze structural damage. The project bridges advanced computational methods with practical civil engineering applications, offering robust solutions suitable for both academic research and industrial implementation.
 
-The journey culminated in impressive results. Initially, our predictions deviated by  **23%**  from ground truth. However, through architectural refinements, we slashed this to approximately  **14%**. Further fine-tuning, including optimizing loss functions and extending training, yielded a remarkable final error rate of just  **4.4%**.
+## Case Studies
 
-Additionally, training time averaged around 15 minutes for 15k epochs on a T4 GPU, graciously provided by Google.
+### Chapter 3: Simple Framed Structure
 
-Finally, Empirical testing regarding the depth and width of the network was conducted, revealing minimal gains in accuracy, if any.
+*   **Linear Dynamic Analysis:** Implemented numerical methods to solve the equations of motion for multi-degree-of-freedom (`MDOF`) framed structures, simplifying to single-degree-of-freedom (`SDOF`) for efficient analysis.
+*   **Model Development & Optimization:**
+    *   Transitioned computational models from Maple to Python, significantly enhancing performance through `NumPy`, `SymPy`, and multi-threading (achieving **~60x speed improvement**).
+    *   Constructed extensive datasets (**~250k combinations**) representing structural conditions including incremental damage in Young's Modulus (`E`) and cross-sectional area (`A`).
+*   **Deep Learning Application:** Leveraged and significantly improved upon a custom `TabTransformer` architecture by integrating advanced mechanisms such as Residual Networks, Sparse Attention, Mixture-of-Experts (`MoE`), and Squeeze-and-Excite Networks (`SENet`).
+*   **Model Performance:** Achieved a final `MAPE` of **4.4%** for individual predictions, enhanced further through stacking ensemble methods down to **1.17%**.
 
-## Conclusion
+### Chapter 4: Bridge Truss Analysis
 
-Our exploration of deep learning models for SHM underscores their viability. With an error rate of 4.4% (based on  **80k combinations**), we’ve demonstrated their potential. Even when considering the full dataset (based on  **200k combinations**), the error remained commendably low at  **6.6%**. 
+*   **Bridge Structural Modeling:**
+    *   Detailed exploration of bridge loads per Eurocode standards (`EN 1991-2`), focusing on Warren, Pratt, and Howe trusses.
+    *   Geometric design optimized within Eurocode recommended constraints, ensuring realistic force distribution and computational feasibility.
+*   **Dataset Creation:**
+    *   Generated structured datasets including geometric, mechanical, and modal parameters, optimized for deep learning inputs.
+*   **Deep Learning Approach:**
+    *   Employed advanced data preprocessing and hyperparameter tuning, significantly improving baseline performance from **23.36% `MAPE`** to approximately **1.94%** through innovative custom loss functions.
+*   **Predictive Robustness:** Validated predictive performance on extensive unseen datasets, maintaining accuracy and demonstrating resilience to varying structural damage scenarios.
 
-Furthermore, it is crucial to highlight the substantial enhancement in performance in the final findings. By leveraging common techniques such as **Ensemble**, led to astonishingly low errors—around  **1.2%**—across both scenarios.
+### Chapter 5: Experimental Validation
 
-In conclusion, these results bridge the gap between theory and application, demonstrating promising prospects for integrating such methodologies into more reliable and cost-effective monitoring practices.
+*   **Experimental Setup:**
+    *   Conducted a thorough comparison of theoretical predictions against experimental data using `LVDTs` and photogrammetry for a simply supported steel beam.
+    *   Evaluated elastic deflections under incremental loading to validate numerical modeling accuracy.
+*   **Validation Results:**
+    *   Verified the numerical integrity and accuracy of displacement predictions (within **~3% error** for typical loading conditions).
+    *   Identified limitations in photogrammetric measurements, highlighting precision trade-offs in practical monitoring applications.
+
+## Key Results
+
+| Model Type                  | Structure        | MAPE (%)   | MdAPE (%)  | Notes
+| :-------------------------- | :--------------- | :--------- | :--------- |  :------------------------------- |
+| Baseline Transformer        | Framed Structure | 24-30%     | -          | Initial unoptimized model        |
+| Optimized Transformer       | Framed Structure | **4.4%**   | **1.93%**  | Advanced architecture & tuning   |
+| Stacking Ensemble           | Framed Structure | **1.17%**  | **1.12%**  | Best accuracy achieved           |
+| Baseline Transformer        | Bridge Truss     | **23.36%** | **13.35%** | Initial setup, suboptimal        |
+| Custom Loss & Optimization | Bridge Truss     | **1.94%**  | **1.07%**  | Optimal results with adaptive loss combinations |
+
+*(MAPE: Mean Absolute Percentage Error, MdAPE: Median Absolute Percentage Error)*
+
+## Conclusion & Future Directions
+
+This work underscores the effectiveness and versatility of deep learning for `SHM` applications. By integrating advanced numerical modeling, extensive dataset generation, and innovative machine learning methodologies, the results demonstrate superior predictive capabilities with significant implications for safety, cost-efficiency, and maintenance optimization.
+
+Future research directions:
+
+*   Extension to nonlinear structural behaviors.
+*   Integration of transfer learning methods to improve adaptability across various structural types.
+*   Real-time deployment considerations for industrial-scale `SHM`.
+
+## Acknowledgments
+
+The computational resources provided by `Google Colab` have significantly accelerated this research. Special thanks to `Kaggle` for training the bulk of the Bridge Truss models.
