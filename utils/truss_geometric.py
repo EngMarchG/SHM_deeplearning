@@ -1,10 +1,14 @@
 import logging
 import numpy as np
+import matplotlib.pyplot as plt
 from typing import Dict, Tuple, List, Optional
-from utils.element_assembly import nodal_coords, pel_ele, fill_ele_nod
+from utils.truss_element_assembly import nodal_coords, pel_ele, fill_ele_nod
 
 MIN_ANGLE = np.pi / 6
 MAX_ANGLE = np.pi / 3
+
+# Get the logger
+logger = logging.getLogger(__name__)
 
 
 ################## Geometric Functions ##################
@@ -91,9 +95,6 @@ def calculate_bridge(span: float, angle: int = 45, spacing: float = 0,
         (float, float, float): The height of the bridge, the distance between columns,
                                and the length of the diagonal elements (rods).
     """
-    if truss_mode == "simple":
-        print("Nothing to calculate, Moving on to the next step.")
-        return 0, 0, 0
     if not spacing:
         logging.info("Trying to find a suitable height and spacing based on the angle.")
         height, spacing, used_angle = try_angles(span, angle, lower_limit,
@@ -153,36 +154,42 @@ def calculate_essential_elements(span: float, spacing: float, truss_mode: str ="
     return n_columns, n_nod_tot, n_rods, n_beams, n_ele_tot, n_bot_beams
 
 
-def calculate_simple_elements(span: float, spacing: float, col_placements: Optional[List] = None, skip_col: Optional[List] = None,
-                                 beam_partition: int = 0) -> Tuple[int, int, int, int, int, int]:
+def calculate_simple_elements(span: float, spacing: float, truss_mode: str, col_placements: Optional[List] = None,
+                              skip_col: Optional[List] = None, beam_partition: int = 1) -> Tuple[int, int, int, int, int, int]:
     """
     Calculate the number of columns and beams for a simple bridge, along with their spacing.
 
     Args:
         span (float): The total length of the bridge.
         spacing (float): The distance between nodes (columns) in the bridge.
-        truss_mode (str): The mode of the truss bridge (warren, pratt)
+        truss_mode (str): The mode of the truss bridge (simple, simple_cant)
                         Defaults to pratt.
 
     Returns:
         (int, int, int, int, int): The number of columns, nodes, 
                                 rods, beams, and total elements.
     """
-    n_columns = len(col_placements)
-    if not col_placements:
-        n_columns = int(span // spacing)
+    extra_beams = 0 # Extra beams for cantilevered bridges
+    if col_placements:
+        n_columns = len(col_placements)
+    else:
+        n_columns = int(span // spacing) + 1
     
     if skip_col:
         n_columns -= len(skip_col)
 
-    if beam_partition:
-        if col_placements :
+    if truss_mode != "simple":
+        extra_beams = 1
+
+    if beam_partition > 1:
+        if col_placements:
             raise ValueError("Cannot partition beams with custom column placements.")
         if spacing // beam_partition < spacing / beam_partition:
             raise ValueError("Beam partition should be a divisor of the spacing.")
-        n_beams = (n_columns -1) * beam_partition
+        n_beams = (n_columns - 1 + extra_beams) * beam_partition
     else:
-        n_beams = n_columns - 1
+        print("Defaulting partition to 1.")
+        n_beams = n_columns - 1 + extra_beams
     
     n_nod_tot = n_beams + 2
     n_ele_tot = n_columns + n_beams
@@ -241,12 +248,12 @@ def calculate_element_node(span: float, spacing: float, height: float, n_dim: in
     return nodal_coord, par, pel, ele_nod, n_par_tot
 
 
-def calculate_element_properties(n_columns: int, n_beams: int, diag: float, spacing: float, 
+def calculate_element_properties(n_ele_tot: int, n_columns: int, n_beams: int, diag: float, spacing: float, 
                                  height: float, J: np.array, A: np.array, h: np.array, beta: np.array,
                                  ro: np.array, E: np.array, X: np.array, Y: np.array, ele_nod: List,
                                  shear_mod: int, width_properties: Dict, height_properties: Dict,
-                                 unit_weight_properties: Dict, elastic_mod_properties: Dict
-                                 ) -> Tuple[np.array, np.array, np.array, np.array, np.array, np.array, np.array]:
+                                 unit_weight_properties: Dict, elastic_mod_properties: Dict,
+                                 truss_mode: str, beam_partition: int = 1) -> Tuple[np.array, np.array, np.array, np.array, np.array, np.array, np.array]:
     """
     Calculate the properties of the elements in the truss bridge.
 
@@ -268,24 +275,38 @@ def calculate_element_properties(n_columns: int, n_beams: int, diag: float, spac
     # Calculate the properties of the elements
     J[:n_beams] = inertia_beam
     A[:n_beams] = area_beam
-    h[:n_beams] = spacing
+    if "simple" in truss_mode:
+        h[:n_beams] = spacing / beam_partition
+    else:
+        h[:n_beams] = spacing
     ro[:n_beams] = unit_weight_properties['beam']
     E[:n_beams] = elastic_mod_properties['beam']
 
-    J[n_beams:n_beams + n_columns] = inertia_column
-    A[n_beams:n_beams + n_columns] = area_column
-    h[n_beams:n_beams + n_columns] = height
-    ro[n_beams:n_beams + n_columns] = unit_weight_properties['column']
-    E[n_beams:n_beams + n_columns] = elastic_mod_properties['column']
+    if n_beams != n_ele_tot:
+        J[n_beams:n_beams + n_columns] = inertia_column
+        A[n_beams:n_beams + n_columns] = area_column
+        h[n_beams:n_beams + n_columns] = height
+        ro[n_beams:n_beams + n_columns] = unit_weight_properties['column']
+        E[n_beams:n_beams + n_columns] = elastic_mod_properties['column']
 
-    J[n_beams + n_columns:] = inertia_rod
-    A[n_beams + n_columns:] = area_rod
-    h[n_beams + n_columns:] = diag
-    ro[n_beams + n_columns:] = unit_weight_properties['rod']
-    E[n_beams + n_columns:] = elastic_mod_properties['rod']
+        J[n_beams + n_columns:] = inertia_rod
+        A[n_beams + n_columns:] = area_rod
+        h[n_beams + n_columns:] = diag
+        ro[n_beams + n_columns:] = unit_weight_properties['rod']
+        E[n_beams + n_columns:] = elastic_mod_properties['rod']
+    
+    # Debugging for any errors
+    if np.any(J == 0) or np.any(A == 0) or np.any(h == 0) or np.any(ro == 0) or np.any(E == 0):
+        raise ValueError("There are materials with no property")
 
     for i, _ in enumerate(beta):
-        beta[i] = np.arccos((X[ele_nod[i, 1]] - X[ele_nod[i, 0]]) / abs(h[i]))
+        dx = X[ele_nod[i, 1]] - X[ele_nod[i, 0]]
+        if abs(h[i]) < 1e-10:  # Avoid division by zero
+            beta[i] = 0
+        else:
+            # Ensure value is within [-1, 1] for arccos
+            cos_val = np.clip(dx / abs(h[i]), -1.0, 1.0)
+            beta[i] = np.arccos(cos_val)
 
     G = np.full(len(E), shear_mod, dtype=np.float32)
 
@@ -352,3 +373,120 @@ def truss_design(n_bot_beams: int, n_rods: int,
 
     else:
         return np.array([])
+
+
+def col_pos(W: np.ndarray, n_par_nod: int, X: np.ndarray, Y: Optional[np.ndarray] = None) -> np.ndarray:
+    """
+    Calculate the column positions for the truss bridge.
+
+    Args:
+        W: Boundary condition array (1 for column, 0 for no column)
+        n_par_nod: Number of parameters per node
+        X: X coordinates of nodes
+        Y: Y coordinates of nodes (optional)
+
+    Returns:
+        A tuple of numpy arrays (X_col, Y_col) representing the x and y coordinates of the columns.
+    """
+    y_col = []
+    x_col = []
+
+    for i, pos in enumerate(X):
+        if 1 in W[i*n_par_nod:(i+1)*n_par_nod]:  # Check if there is a column at this node
+            x_col.append(pos)
+            y_col.append(0)
+            if Y is not None:
+                y_col[-1] = Y[i]
+    
+    # Change to numpy arrays
+    x_col = np.array(x_col)
+    y_col = np.array(y_col)
+
+    return x_col, y_col
+
+
+################## Plotting Functions ##################
+def plot_elements(ax, truss_mode, ele_nod, X, Y, h, beta):
+    """
+    Plot the structural elements (1D or 2D) on the given axes.
+
+    Args:
+        ax: Matplotlib axes object.
+        truss_mode: String indicating the truss mode ("simple" for 1D, others for 2D).
+        ele_nod: Numpy array of element-node connectivity.
+        X: Numpy array of X coordinates of nodes.
+        Y: Numpy array of Y coordinates of nodes.
+        h: Numpy array of element lengths.
+        beta: Numpy array of element angles in radians.
+    """
+    if "simple" in truss_mode:
+        # Plot each element as a horizontal line
+        for i in range(len(ele_nod)):
+            x1 = X[ele_nod[i, 0]]  # Start node X
+            length = h[i]
+            x2 = x1 + length
+
+            ax.plot([x1, x2], [0, 0], 'b')  # Plot element
+            ax.text((x1 + x2) / 2, 0, str(i), verticalalignment='bottom')  # Label element
+
+        ax.plot(X, np.zeros_like(X), 'ro')  # Plot nodes as red circles on the x-axis
+        ax.set_title('1D Element Plot')
+    else:
+        # Plot each element based on angle beta
+        for i in range(len(ele_nod)):
+            x1, y1 = X[ele_nod[i, 0]], Y[ele_nod[i, 0]]  # Start node coordinates
+            length = h[i]
+            x2 = x1 + length * np.cos(beta[i])
+            y2 = y1 + length * np.sin(beta[i])
+
+            ax.plot([x1, x2], [y1, y2], 'b')  # Plot element
+            ax.text((x1 + x2) / 2, (y1 + y2) / 2, str(i))  # Label element
+
+        ax.plot(X, Y, 'ro')  # Plot nodes
+        ax.set_title('2D Element Plot')
+
+
+def plot_supports(ax, X_col, Y_col, W, n_par_nod, X):
+    """
+    Plot supports (roller, pin, fixed) on the structure.
+
+    Args:
+        ax: Matplotlib axes object.
+        X_col: Numpy array of X coordinates where supports are located.
+        Y_col: Numpy array of Y coordinates where supports are located.
+        W: Numpy array representing boundary conditions (1 for restrained, 0 for free).
+        n_par_nod: Number of parameters per node.
+        support_types: List of support types to cycle through.
+    """
+    for i, _ in enumerate(X_col):
+        x = X_col[i]
+        y = Y_col[i]
+        
+        # Find the node index
+        idx = np.where(X == x)[0][0]
+        support_type = sum(W[idx * n_par_nod:(idx + 1) * n_par_nod])
+
+        if support_type == 1:
+            # Larger circle for roller
+            circle_radius = 0.03  # Increased size
+            circle = plt.Circle((x, y - circle_radius), circle_radius, color='k', fill=True)
+            ax.add_patch(circle)
+        elif support_type == 2:
+            # Larger triangle for pin
+            triangle_base = 0.1
+            triangle_height = 0.05
+
+            tri_x = [x - triangle_base/2, x + triangle_base/2, x]
+            tri_y = [y - triangle_height, y - triangle_height, y]
+            ax.fill(tri_x, tri_y, 'k')
+        elif support_type == 3:
+            # Fixed support with lines
+            line_height = 0.015
+            line_width = 0.05
+
+            ax.plot([x - line_width/2, x + line_width/2], 
+                    [y - line_height, y - line_height], 'k', linewidth=2)
+            for j in range(5):
+                gap = line_width / 4
+                ax.plot([x - line_width/2 + j * gap, x - line_width/2 + j * gap],
+                        [y - line_height, y - line_height - 0.02], 'k')

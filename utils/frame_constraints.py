@@ -1,4 +1,4 @@
-# Constants
+# Frame constants
 N_columns = 2
 N_floors = 5
 N_nod_tot = (N_floors + 1) * N_columns
@@ -8,9 +8,9 @@ N_ele_tot = N_floors * (2 * N_columns - 1)
 N_nod_ele = 2
 N_par_ele = N_par_nod * N_nod_ele
 N_tot_bound = 6
-N_plots = 3
+N_plots = 4
 
-# For plotting
+# Number of points for plotting
 N_discritizations = 10
 
 # Distance between nodes in meters
@@ -23,7 +23,7 @@ height_beam = 0.35
 width_column = 0.4
 height_column = 0.4
 
-# Load on columns and angle in kN and degrees
+# Horizontal load on columns and angle in kN and degrees
 po = 100
 theta = 0
 
