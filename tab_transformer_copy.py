@@ -381,7 +381,6 @@ class TabTransformer_edit(nn.Module):
         self.category_embed = nn.Embedding(total_tokens, dim - shared_embed_dim)
 
         # take care of shared category embed
-
         self.use_shared_categ_embed = use_shared_categ_embed
 
         if use_shared_categ_embed:
@@ -389,21 +388,18 @@ class TabTransformer_edit(nn.Module):
             nn.init.normal_(self.shared_category_embed, std = 0.02)
 
         # for automatically offsetting unique category ids to the correct position in the categories embedding table
-
         if self.num_unique_categories > 0:
             categories_offset = F.pad(torch.tensor(list(categories)), (1, 0), value = num_special_tokens)
             categories_offset = categories_offset.cumsum(dim = -1)[:-1]
             self.register_buffer('categories_offset', categories_offset)
 
         # continuous
-
         self.num_continuous = num_continuous
 
         if self.num_continuous > 0:
             if exists(continuous_mean_std):
                 assert continuous_mean_std.shape == (num_continuous, 2), f'continuous_mean_std must have a shape of ({num_continuous}, 2) where the last dimension contains the mean and variance respectively'
             self.register_buffer('continuous_mean_std', continuous_mean_std)
-
             self.norm = nn.LayerNorm(num_continuous)
 
 
