@@ -56,8 +56,8 @@ Structural Health Monitoring is crucial for ensuring the reliability and longevi
     *   Employed advanced data preprocessing and hyperparameter tuning, significantly improving baseline performance from **23.36% `MAPE`** to approximately **1.94%** through innovative custom loss functions.
 *   **Predictive Robustness:** Validated predictive performance on extensive unseen datasets, maintaining accuracy and demonstrating resilience to varying structural damage scenarios.
 <p align="center">
-  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/warren_mode3.png" alt="Truss deformation output" width="500"/>
-  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/loss3.png" alt="Loss function graph" width="428"/>
+  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/warren_mode3.png" alt="Truss deformation output" width="384"/>
+  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/loss3.png" alt="Loss function graph" width="329"/>
 </p>
 
 ### Chapter 5: Experimental Validation
