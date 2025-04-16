@@ -1,22 +1,35 @@
-# Structural Health Monitoring (SHM) Using Advanced Deep Learning Techniques
+
+# Structural Health Monitoring (SHM) Using a Transformer Model with Custom based Loss Functions
 
 This repository presents a comprehensive exploration of Structural Health Monitoring (SHM) methodologies through state-of-the-art deep learning methods and rigorous numerical modeling. Originating from extensive research, the code and analyses presented here correspond to Chapters 3, 4, and 5 of my thesis, covering a wide range of structural types—from simple framed structures and bridge trusses to experimental validation of numerical integrity.
 
 ## Quick Links
 
 *   [Introduction](#introduction)
+*   [Key Results](#key-results)
 *   [Case Studies](#case-studies)
     *   [Chapter 3: Simple Framed Structure](#chapter-3-simple-framed-structure)
     *   [Chapter 4: Bridge Truss Analysis](#chapter-4-bridge-truss-analysis)
     *   [Chapter 5: Experimental Validation](#chapter-5-experimental-validation)
 *   [TabTransformer Architecture: Handling Empty Categories and Implicit Regularization](#tabtransformer-architecture-handling-empty-categories-and-implicit-regularization)
-*   [Key Results](#key-results)
 *   [Conclusion & Future Directions](#conclusion--future-directions)
 *   [Acknowledgments](#acknowledgments)
 
 ## Introduction
 
-Structural Health Monitoring (`SHM`) is crucial for ensuring the reliability and longevity of civil engineering structures. This repository employs state-of-the-art deep learning and numerical modeling techniques to detect, quantify, and analyze structural damage. The project bridges advanced computational methods with practical civil engineering applications, offering robust solutions suitable for both academic research and industrial implementation.
+Structural Health Monitoring is crucial for ensuring the reliability and longevity of civil engineering structures. This repository employs state-of-the-art deep learning and numerical modeling techniques to detect, quantify, and analyze structural damage. The project bridges advanced computational methods with practical civil engineering applications, offering robust solutions suitable for both academic research and industrial implementation.
+
+## Key Results
+
+| Model Type                  | Structure        | MAPE (%)   | MdAPE (%)  | Notes                                           |
+| :-------------------------- | :--------------- | :--------- | :--------- | :---------------------------------------------- |
+| Baseline Transformer        | Framed Structure | 24-30%     | -          | Initial unoptimized model                       |
+| Optimized Transformer       | Framed Structure | **4.4%**   | **1.93%**  | Advanced architecture & tuning                  |
+| Stacking Ensemble           | Framed Structure | **1.17%**  | **1.12%**  | Best accuracy achieved                          |
+| Baseline Transformer        | Bridge Truss     | 23.36% | 13.35% | Initial setup, suboptimal                       |
+| Custom Loss & Optimization | Bridge Truss     | **1.94%**  | **1.07%**  | Optimal results with adaptive loss combinations |
+
+*(MAPE: Mean Absolute Percentage Error, MdAPE: Median Absolute Percentage Error)*
 
 ## Case Studies
 
@@ -74,32 +87,11 @@ This produces nontrivial constraints on the MLP parameters, effectively regulari
 *   **Initialization Bias:** Transformer parameters (e.g., Xavier-initialized) introduce biases in optimizer trajectories, even with zero input flow.
 
 ### 🧩 Architectural Advantages
-*   **Zero-Shot Regularization:** Gains generalization benefits without categorical input.
+*   **Implicit Regularization:** Gains generalization benefits without categorical input.
 *   **Future-Proofing:** If categorical data is introduced later, no retraining or re-architecting is needed.
 *   **Parameter-Space Shaping:** Acts as an implicit constraint that smooths optimization.
 *   **Transfer Potential:** Continuously-trained Transformer weights may be well-conditioned for future tasks.
 
-### 🛠️ Implementation Insights
-*   Even with categorical shape `[B, 0]`, the Transformer block receives gradients.
-*   Autograd tracks and updates all parameters, enabling subtle, cumulative changes across epochs.
-
-```python
-# Example: defining an empty categorical input
-categorical_input = torch.empty((batch_size, 0))
-```
-*Note: Ensure Transformer parameters are registered in the optimizer even if unused in forward propagation.*
-
-## Key Results
-
-| Model Type                  | Structure        | MAPE (%)   | MdAPE (%)  | Notes                                           |
-| :-------------------------- | :--------------- | :--------- | :--------- | :---------------------------------------------- |
-| Baseline Transformer        | Framed Structure | 24-30%     | -          | Initial unoptimized model                       |
-| Optimized Transformer       | Framed Structure | **4.4%**   | **1.93%**  | Advanced architecture & tuning                  |
-| Stacking Ensemble           | Framed Structure | **1.17%**  | **1.12%**  | Best accuracy achieved                          |
-| Baseline Transformer        | Bridge Truss     | **23.36%** | **13.35%** | Initial setup, suboptimal                       |
-| Custom Loss & Optimization | Bridge Truss     | **1.94%**  | **1.07%**  | Optimal results with adaptive loss combinations |
-
-*(MAPE: Mean Absolute Percentage Error, MdAPE: Median Absolute Percentage Error)*
 
 ## Conclusion & Future Directions
 
@@ -127,5 +119,7 @@ Grateful acknowledgment is extended to:
 
 -   **Google Colab**: for computational resources critical to generating the large amount of datasets and for training the deep learning models.
 -   **Kaggle**: for the primary training of Bridge Truss models and supplementary GPU support.
+-   **Original TabTransformer**: [lucidrains/tab-transformer-pytorch: Implementation of TabTransformer, attention network for tabular data, in Pytorch](https://github.com/lucidrains/tab-transformer-pytorch) 
+This project builds upon the foundational TabTransformer architecture with custom modifications.
 
 Please cite this repository or contact the authors for inquiries regarding extended data access, collaboration, or related publications.
