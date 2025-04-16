@@ -1,5 +1,5 @@
 
-# Structural Health Monitoring (SHM) Using a Transformer Model with Custom based Loss Functions
+# Structural Health Monitoring (SHM) Using a Transformer Model with Custom based Loss Functions to Predict Material Properties and Localize Damage
 
 <p align="center">
   <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/milestones.png" alt="SHM architecture" width="800"/>
