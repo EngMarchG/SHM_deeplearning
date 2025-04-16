@@ -1,6 +1,9 @@
 
 # Structural Health Monitoring (SHM) Using a Transformer Model with Custom based Loss Functions
 
+<p align="center">
+  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/milestones.png" alt="SHM architecture" width="800"/>
+</p>
 This repository presents a comprehensive exploration of Structural Health Monitoring (SHM) methodologies through state-of-the-art deep learning methods and rigorous numerical modeling. Originating from extensive research, the code and analyses presented here correspond to Chapters 3, 4, and 5 of my thesis, covering a wide range of structural types—from simple framed structures and bridge trusses to experimental validation of numerical integrity.
 
 ## Quick Links
@@ -52,6 +55,10 @@ Structural Health Monitoring is crucial for ensuring the reliability and longevi
 *   **Deep Learning Approach:**
     *   Employed advanced data preprocessing and hyperparameter tuning, significantly improving baseline performance from **23.36% `MAPE`** to approximately **1.94%** through innovative custom loss functions.
 *   **Predictive Robustness:** Validated predictive performance on extensive unseen datasets, maintaining accuracy and demonstrating resilience to varying structural damage scenarios.
+<p align="center">
+  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/warren_mode3.png" alt="Truss deformation output" width="500"/>
+  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/loss3.png" alt="Loss function graph" width="428"/>
+</p>
 
 ### Chapter 5: Experimental Validation
 
@@ -65,6 +72,10 @@ Structural Health Monitoring is crucial for ensuring the reliability and longevi
 ## TabTransformer Architecture: Handling Empty Categories and Implicit Regularization
 
 This architecture supports a unique mode of operation where categorical features are absent (i.e., `torch.empty((n, 0))` is passed as input), but the Transformer subnetwork is retained in the model. While it plays no role in the forward pass, its parameters receive gradients and participate in optimization, leading to an effect known as Dormant Parameter Regularization (DPR).
+
+<p align="center">
+  <img src="https://github.com/EngMarchG/SHM_deeplearning/blob/assets/images/transformer_model.png" alt="SHM architecture" width="500"/>
+</p>
 
 ### 🔧 Architecture Overview
 *   **Input Split:** Input data is divided into categorical and continuous parts.
